@@ -1,5 +1,6 @@
 // managers/mongoose
 const mongoose = require('mongoose');
+const Log = require('@novice1/logger').debugger('@storehouse/core:yungoose');
 const WrapAggregation = require('./aggregation');
 
 /* TYPE DEFS */
