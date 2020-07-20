@@ -1,7 +1,7 @@
 {
   "name": "@storehouse/core",
   "private": false,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utils for multi driver/odm/orm usage",
   "main": "index.js",
   "repository": {
@@ -17,6 +17,6 @@
     "@novice1/logger": "^1.1.1"
   },
   "devDependencies": {
-    "kaukau": "0.0.70"
+    "kaukau": "0.0.71"
   }
 }
