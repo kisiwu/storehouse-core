@@ -17,6 +17,6 @@
     "@novice1/logger": "^1.1.1"
   },
   "devDependencies": {
-    "kaukau": "0.0.71"
+    "kaukau": "^1.0.0"
   }
 }
