@@ -11,12 +11,12 @@ export class MapManager implements IManager {
     this.#models = new Map<string, ModelType>();
   }
 
-  getConnection(): void {
-    return;
+  getConnection<T = unknown>(): Map<string, ModelType<T>> {
+    return <Map<string, ModelType<T>>>this.#models;
   }
 
   closeConnection(): void {
-    return;
+    console.log('closeConnection');
   }
 
   getModel<T>(name: string): ModelType<T> {

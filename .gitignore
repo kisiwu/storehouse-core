@@ -1,7 +1,7 @@
 private
 dev
 docs
-lib
+/lib
 
 # Logs
 logs
