@@ -1,5 +1,7 @@
 # @storehouse/core
 
+[Documentation](https://novice1.000webhostapp.com/storehouse/core/).
+
 ## Installation
 
 ```bash
@@ -214,4 +216,4 @@ If the class has a static property `type`, it will be stored with its value. Oth
 
 ## References
 
-- [Documentation](https://socket.io/)
+- [Documentation](https://novice1.000webhostapp.com/storehouse/core/)
