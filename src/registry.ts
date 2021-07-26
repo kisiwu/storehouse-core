@@ -9,7 +9,7 @@ export class Registry {
   #defaultManager?: string;
 
   set defaultManager(name: string) {
-    Log.info('Set default manager as [%s]', name)
+    Log.info('Set default manager as "%s"', name)
     this.#defaultManager = name
   }
 

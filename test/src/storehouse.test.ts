@@ -37,7 +37,6 @@ describe('Storehouse', () => {
     expect(userName).to.be.a('string')
         .and.equals('keeper');
     
-    
     // close all connections
     Storehouse.close();
 
