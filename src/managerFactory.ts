@@ -1,7 +1,7 @@
 import { IManager, ManagerSettings, ManagerConstructor } from './manager';
 
-export interface ManagerFactoryArg extends ManagerSettings {
-  type: string | ManagerConstructor;
+export interface ManagerFactoryArg<TDatabase = unknown, TOptions = unknown, TModels = unknown> extends ManagerSettings<TDatabase, TOptions, TModels> {
+  type: string | ManagerConstructor<TDatabase, TOptions, TModels>;
 }
 
 export class ManagerFactory {
@@ -11,7 +11,7 @@ export class ManagerFactory {
     this.#managerClasses = new Map<string, ManagerConstructor>();
   }
 
-  getManager(arg: ManagerFactoryArg): IManager {
+  getManager<TDatabase = unknown, TOptions = unknown, TModels = unknown>(arg: ManagerFactoryArg<TDatabase, TOptions, TModels>): IManager {
     let manager;
     if (typeof arg.type === 'string') {
       const mClass = this.#managerClasses.get(arg.type);
@@ -36,12 +36,12 @@ export class ManagerFactory {
     return manager;
   }
 
-  setManagerType(managerClass: ManagerConstructor): ManagerFactory {
-    this.#managerClasses.set(managerClass.type || managerClass.name, managerClass);
+  setManagerType<TDatabase = unknown, TOptions = unknown, TModels = unknown>(managerClass: ManagerConstructor<TDatabase, TOptions, TModels>): ManagerFactory {
+    this.#managerClasses.set(managerClass.type || managerClass.name, <ManagerConstructor>managerClass);
     return this;
   }
 
-  removeManagerType(managerClass: ManagerConstructor | string): boolean {
+  removeManagerType<TDatabase = unknown, TOptions = unknown, TModels = unknown>(managerClass: ManagerConstructor<TDatabase, TOptions, TModels> | string): boolean {
     let r: boolean;
     if (typeof managerClass === 'string') {
       r = this.#managerClasses.delete(managerClass);

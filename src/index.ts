@@ -10,7 +10,7 @@ class Storehouse extends Registry {
     this.#managerFactory = managerFactory || new ManagerFactory();
   }
 
-  setManagerType(managerClass: ManagerConstructor): Storehouse {
+  setManagerType<TDatabase = unknown, TOptions = unknown, TModels = unknown>(managerClass: ManagerConstructor<TDatabase, TOptions, TModels>): Storehouse {
     this.#managerFactory.setManagerType(managerClass);
     return this;
   }
