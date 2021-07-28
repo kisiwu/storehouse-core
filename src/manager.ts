@@ -5,14 +5,11 @@ export interface IManager {
   getModel?(name: string): unknown;
 }
 
-export interface ManagerSettings<TDatabase = unknown, TOptions = unknown, TModels = unknown> {
-  //type: string,
-  database?: TDatabase;
-  options?: TOptions;
-  models?: TModels;
+export interface ManagerSettings<TConfig = unknown> {
+  config?: TConfig;
 }
 
-export type ManagerConstructor<TDatabase = unknown, TOptions = unknown, TModels = unknown> = { 
-  new(settings: ManagerSettings<TDatabase, TOptions, TModels>): IManager;
+export type ManagerConstructor<TConfig = unknown> = { 
+  new(settings: ManagerSettings<TConfig>): IManager;
   readonly type?: string;
 };

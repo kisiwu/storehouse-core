@@ -10,12 +10,12 @@ class Storehouse extends Registry {
     this.#managerFactory = managerFactory || new ManagerFactory();
   }
 
-  setManagerType<TDatabase = unknown, TOptions = unknown, TModels = unknown>(managerClass: ManagerConstructor<TDatabase, TOptions, TModels>): Storehouse {
+  setManagerType<TConfig = unknown>(managerClass: ManagerConstructor<TConfig>): Storehouse {
     this.#managerFactory.setManagerType(managerClass);
     return this;
   }
 
-  add(arg: Record<string, ManagerFactoryArg>): Storehouse {
+  add<TConfig = unknown>(arg: Record<string, ManagerFactoryArg<TConfig>>): Storehouse {
     for (const name in arg) {
       this.addManager(name, this.#managerFactory.getManager(arg[name]));
     }

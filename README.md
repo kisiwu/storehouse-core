@@ -170,11 +170,20 @@ The options to create the manager are:
 - **type**: (_string|function_) The class to use to instanciate the manager. Can be a string if classes were already set with method `setManagerType`. If it's a string, its value should be:
   - the same as the class's static property `type` (if present)
   - the name of the class (default).
-- **[database]**: (_unknown_)
-- **[options]**: (_unknown_)
-- **[models]**: (_unknown[]_)
+- **[config]**: (_unknown_)
 
-**database**, **options** and **models** are optional and are sent to the manager's constructor.
+**config** is optional and is sent as part of the the manager's constructor argument.
+
+Example:
+```ts
+class MapManager implements IManager {
+  constructor(arg: { config?: { message: string } }) {
+    console.log(arg.config?.message);
+    // ...
+  }
+  // ...
+}
+```
 
 
 

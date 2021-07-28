@@ -13,7 +13,10 @@ describe('Storehouse', () => {
     Storehouse.setManagerType(MapManager);
     Storehouse.add({
       mapping: {
-        type: 'mapping'
+        type: 'mapping',
+        config: {
+          message: 'starting'
+        }
       }
     });
 

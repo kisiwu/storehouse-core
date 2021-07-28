@@ -13,7 +13,7 @@ export class RegistryFactory {
     return this.#managerFactory;
   }
 
-  private _getManagers(arg: Record<string, ManagerFactoryArg>): Record<string, IManager> {
+  private _getManagers<TConfig = unknown>(arg: Record<string, ManagerFactoryArg<TConfig>>): Record<string, IManager> {
     const managers: Record<string, IManager> = {};
     for (const name in arg) {
       managers[name] = this.#managerFactory.getManager(arg[name]);
@@ -21,7 +21,7 @@ export class RegistryFactory {
     return managers;
   }
 
-  getRegistry(arg: Record<string, ManagerFactoryArg>): Registry {
+  getRegistry<TConfig = unknown>(arg: Record<string, ManagerFactoryArg<TConfig>>): Registry {
     const managers = this._getManagers(arg);
     return new Registry(managers);
   }

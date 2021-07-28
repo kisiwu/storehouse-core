@@ -1,7 +1,7 @@
 import { IManager, ManagerSettings, ManagerConstructor } from './manager';
 
-export interface ManagerFactoryArg<TDatabase = unknown, TOptions = unknown, TModels = unknown> extends ManagerSettings<TDatabase, TOptions, TModels> {
-  type: string | ManagerConstructor<TDatabase, TOptions, TModels>;
+export interface ManagerFactoryArg<TConfig = unknown> extends ManagerSettings<TConfig> {
+  type: string | ManagerConstructor<TConfig>;
 }
 
 export class ManagerFactory {
@@ -11,15 +11,13 @@ export class ManagerFactory {
     this.#managerClasses = new Map<string, ManagerConstructor>();
   }
 
-  getManager<TDatabase = unknown, TOptions = unknown, TModels = unknown>(arg: ManagerFactoryArg<TDatabase, TOptions, TModels>): IManager {
+  getManager<TConfig = unknown>(arg: ManagerFactoryArg<TConfig>): IManager {
     let manager;
     if (typeof arg.type === 'string') {
       const mClass = this.#managerClasses.get(arg.type);
       if (mClass) {
         manager = new mClass({
-          database: arg.database,
-          options: arg.options,
-          models: arg.models
+          config: arg.config
         });
       } else {
         throw new Error(
@@ -28,20 +26,18 @@ export class ManagerFactory {
       }
     } else {
       manager = new arg.type({
-        database: arg.database,
-        options: arg.options,
-        models: arg.models
+        config: arg.config
       });
     }
     return manager;
   }
 
-  setManagerType<TDatabase = unknown, TOptions = unknown, TModels = unknown>(managerClass: ManagerConstructor<TDatabase, TOptions, TModels>): ManagerFactory {
+  setManagerType<TConfig = unknown>(managerClass: ManagerConstructor<TConfig>): ManagerFactory {
     this.#managerClasses.set(managerClass.type || managerClass.name, <ManagerConstructor>managerClass);
     return this;
   }
 
-  removeManagerType<TDatabase = unknown, TOptions = unknown, TModels = unknown>(managerClass: ManagerConstructor<TDatabase, TOptions, TModels> | string): boolean {
+  removeManagerType<TConfig = unknown>(managerClass: ManagerConstructor<TConfig> | string): boolean {
     let r: boolean;
     if (typeof managerClass === 'string') {
       r = this.#managerClasses.delete(managerClass);

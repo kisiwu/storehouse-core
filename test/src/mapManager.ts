@@ -1,20 +1,15 @@
-import { IManager, ManagerSettings } from '../../src/manager';
+import { IManager } from '../../src/manager';
 
 export type ModelType<T = unknown> = Map<string, T>;
-
-interface MMSettings extends ManagerSettings {
-  database?: string;
-  models?: string[];
-}
 
 export class MapManager implements IManager {
   static readonly type = 'mapping';
 
   #models: Map<string, ModelType>;
 
-  constructor(s: MMSettings) {
+  constructor(arg: { config?: { message: string } }) {
     this.#models = new Map<string, ModelType>();
-    console.log(s.database);
+    console.log('MapManager message=', arg.config?.message);
   }
 
   getConnection<T = unknown>(): Map<string, ModelType<T>> {
