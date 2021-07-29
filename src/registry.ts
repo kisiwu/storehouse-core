@@ -85,19 +85,13 @@ export class Registry {
    * Closes all connections
    * @returns The number of connections closed
    */
-  closeAllConnections(): Promise<number> {
-    return new Promise((resolve, reject) => {
-      try {
-        let i = 0;
-        for (const m of this.#managers.values()) {
-          m.closeConnection();
-          i++;
-        }
-        resolve(i);
-      } catch(e) {
-        reject(e);
-      }
-    });
+  async closeAllConnections(): Promise<number> {
+    let i = 0;
+    for (const m of this.#managers.values()) {
+      await m.closeConnection();
+      i++;
+    }
+    return i;
   }
 
   /**

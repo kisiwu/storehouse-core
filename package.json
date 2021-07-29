@@ -1,7 +1,7 @@
 {
   "name": "@storehouse/core",
   "private": false,
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Utils for multi driver/odm/orm usage",
   "main": "lib/index.js",
   "repository": {
