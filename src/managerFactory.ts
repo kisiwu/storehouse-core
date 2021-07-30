@@ -17,21 +17,21 @@ export class ManagerFactory {
 
   getManager<TConfig = unknown>(arg: ManagerFactoryArg<TConfig>): IManager {
     let manager;
+    const managerArg: ManagerArg<TConfig> = {
+      name: arg.name,
+      config: arg.config
+    };
     if (typeof arg.type === 'string') {
       const mClass = this.#managerClasses.get(arg.type);
       if (mClass) {
-        manager = new mClass({
-          config: arg.config
-        });
+        manager = new mClass(managerArg);
       } else {
         throw new Error(
-          `Property "manager" with value "${arg.type}" is not supported!`
+          `Property "type" with value "${arg.type}" is not supported!`
         );
       }
     } else {
-      manager = new arg.type({
-        config: arg.config
-      });
+      manager = new arg.type(managerArg);
     }
     return manager;
   }

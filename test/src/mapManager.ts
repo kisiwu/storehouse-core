@@ -6,10 +6,11 @@ export class MapManager implements IManager {
   static readonly type = 'mapping';
 
   #models: Map<string, ModelType>;
+  public name: string;
 
   constructor(arg: { config?: { message: string }, name?: string }) {
     this.#models = new Map<string, ModelType>();
-    console.log('MapManager message=', arg.config?.message);
+    this.name = arg.name || '';
   }
 
   getConnection<T = unknown>(): Map<string, ModelType<T>> {

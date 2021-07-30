@@ -12,7 +12,7 @@ describe('Storehouse', () => {
     // settings
     Storehouse.setManagerType(MapManager);
     Storehouse.add({
-      mapping: {
+      novice_mapping: {
         type: 'mapping',
         config: {
           message: 'starting'
@@ -30,6 +30,7 @@ describe('Storehouse', () => {
     let userName = '';
     const mapping = Storehouse.getManager<MapManager>(/* 'mapping' */);
     if (mapping) {
+      expect(mapping.name).to.equal('novice_mapping');
       const user = mapping.getModel<User>('users').get('id1234');  
       expect(user).to.be.an('object');
       if (user) {
