@@ -1,7 +1,11 @@
-import { IManager, ManagerSettings, ManagerConstructor } from './manager';
+import { IManager, ManagerSettings, ManagerConstructor, ManagerArg } from './manager';
 
-export interface ManagerFactoryArg<TConfig = unknown> extends ManagerSettings<TConfig> {
+export interface ManagerFactorySettings<TConfig = unknown> extends ManagerSettings<TConfig> {
   type: string | ManagerConstructor<TConfig>;
+}
+
+export interface ManagerFactoryArg<TConfig = unknown> 
+  extends ManagerFactorySettings<TConfig>, ManagerArg<TConfig> {
 }
 
 export class ManagerFactory {

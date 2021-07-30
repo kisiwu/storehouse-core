@@ -7,7 +7,7 @@ export class MapManager implements IManager {
 
   #models: Map<string, ModelType>;
 
-  constructor(arg: { config?: { message: string } }) {
+  constructor(arg: { config?: { message: string }, name?: string }) {
     this.#models = new Map<string, ModelType>();
     console.log('MapManager message=', arg.config?.message);
   }

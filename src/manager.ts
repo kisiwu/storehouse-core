@@ -9,7 +9,11 @@ export interface ManagerSettings<TConfig = unknown> {
   config?: TConfig;
 }
 
+export interface ManagerArg<TConfig = unknown> extends ManagerSettings<TConfig> {
+  name?: string;
+}
+
 export type ManagerConstructor<TConfig = unknown> = { 
-  new(settings: ManagerSettings<TConfig>): IManager;
+  new(settings: Partial<ManagerArg<TConfig>>): IManager;
   readonly type?: string;
 };

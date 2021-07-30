@@ -1,5 +1,5 @@
 import { Registry } from './registry';
-import { ManagerFactory, ManagerFactoryArg } from './managerFactory';
+import { ManagerFactory, ManagerFactorySettings } from './managerFactory';
 import {  ManagerConstructor } from './manager';
 
 class Storehouse extends Registry {
@@ -15,9 +15,9 @@ class Storehouse extends Registry {
     return this;
   }
 
-  add<TConfig = unknown>(arg: Record<string, ManagerFactoryArg<TConfig>>): Storehouse {
+  add<TConfig = unknown>(arg: Record<string, ManagerFactorySettings<TConfig>>): Storehouse {
     for (const name in arg) {
-      this.addManager(name, this.#managerFactory.getManager(arg[name]));
+      this.addManager(name, this.#managerFactory.getManager({...arg[name], name}));
     }
     return this;
   }
