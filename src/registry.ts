@@ -15,8 +15,11 @@ export class Registry {
 
   get defaultManager(): string {
     const name = this.#defaultManager || 'default';
-    Log.debug('Get default manager "%s"', name);
     return name;
+  }
+
+  get managerNames(): string[] {
+    return Array.from(this.#managers.keys());
   }
 
   constructor(managers?: Record<string, IManager>) {
@@ -59,6 +62,15 @@ export class Registry {
     return <T>this.#managers.get(name);
   }
 
+  removeManager<T extends IManager = IManager>(name: string): T | undefined {
+    const r = <T>this.#managers.get(name);
+    this.#managers.delete(name);
+    if (r) {
+      Log.info(`Removed manager "${name}"`);
+    }
+    return r;
+  }
+
   getDefaultConnection<T = unknown>(): T | undefined {
     const name = this.defaultManager;
     return <T>this.#managers.get(name)?.getConnection();
@@ -93,6 +105,7 @@ export class Registry {
       await m.closeConnection();
       i++;
     }
+    Log.info(`Closed ${i} manager(s)`);
     return i;
   }
 
@@ -102,6 +115,17 @@ export class Registry {
    */
   close(): Promise<number> {
     return this.closeAllConnections();
+  }
+
+  /**
+   * Closes all connections and removes all managers
+   */
+  async destroy(): Promise<number> {
+    const result = await this.closeAllConnections();
+    this.defaultManager = 'default';
+    this.#managers.clear();
+    Log.info(`Removed ${result} manager(s)`);
+    return result;
   }
 
   getModel<ModelType = unknown>(manager: string, model?: string): ModelType | undefined {

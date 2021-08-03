@@ -7,7 +7,7 @@ const Storehouse = require('../../lib/index');
 const MapManager = require('./mapManager');
 
 describe('Storehouse', () => {
-  it('should be aiight', (done) => {
+  it('should be aiight', async () => {
     // settings
     Storehouse.setManagerType(MapManager);
     Storehouse.add({
@@ -37,8 +37,39 @@ describe('Storehouse', () => {
         .and.equals('keeper');
     
     // close all connections
-    Storehouse.close();
+    await Storehouse.close();
 
-    done();
+    expect(Storehouse.managerNames)
+      .to.be.an('array')
+      .that.includes('mapping')
+      .and.to.have.lengthOf(1);
+
+    // remove manager
+    Storehouse.removeManager('mapping');
+
+    expect(Storehouse.managerNames)
+      .to.be.an('array')
+      .that.is.empty;
+
+    Storehouse.add({
+      anotherone: {
+        type: 'mapping',
+        config: {
+          message: 'starting'
+        }
+      }
+    });
+
+    expect(Storehouse.managerNames)
+      .to.be.an('array')
+      .that.includes('anotherone')
+      .and.to.have.lengthOf(1);
+
+    // close and remove all
+    await Storehouse.destroy();
+
+    expect(Storehouse.managerNames)
+      .to.be.an('array')
+      .that.is.empty;
   });
 });

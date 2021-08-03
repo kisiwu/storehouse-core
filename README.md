@@ -1,6 +1,6 @@
 # @storehouse/core
 
-[Documentation](https://novice1.000webhostapp.com/storehouse/core/).
+See the [Documentation](https://novice1.000webhostapp.com/storehouse/core/) for more information.
 
 ## Installation
 
@@ -153,7 +153,7 @@ if (mapping) {
 await Storehouse.close();
 ```
 
-## Settings
+## Methods
 
 ### add
 
@@ -177,7 +177,7 @@ The options to create the manager are:
 Example:
 ```ts
 class MapManager implements IManager {
-  constructor(arg: { config?: { message: string } }) {
+  constructor(arg: { config?: { message: string }, name?: string }) {
     console.log(arg.config?.message);
     // ...
   }
@@ -208,7 +208,11 @@ Storehouse.getManager(); // will search for 'myManager'
 
 The default manager is always the first one added if you didn't set `defaultManager` manually. 
 
+### hasManager
 
+```ts
+const bool = Storehouse.hasManager('myManager');
+```
 
 ### setManagerType
 
@@ -220,6 +224,32 @@ Storehouse
 ```
 
 If the class has a static property `type`, it will be stored with its value. Otherwise it will use the name of the class.
+
+
+### removeManager
+
+The method returns the removed manager if there is one.
+```ts
+const myManager = Storehouse.removeManager('myManager');
+```
+
+### closeAllConnections
+
+The method call `closeConnection` on all of its managers.
+```ts
+const numberOfManagersClosed = await Storehouse.closeAllConnections();
+```
+or
+```ts
+const numberOfManagersClosed = await Storehouse.close();
+```
+
+### destroy
+
+Calls `closeConnection` on all of its managers and removes them.
+```ts
+const numberOfManagersClosed = await Storehouse.destroy();
+```
 
 
 

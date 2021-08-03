@@ -18,7 +18,7 @@ export class MapManager implements IManager {
   }
 
   closeConnection(): void {
-    console.log('closeConnection');
+    console.log('manager.closeConnection');
   }
 
   getModel<T>(name: string): ModelType<T> {
