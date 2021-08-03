@@ -122,7 +122,7 @@ export class Registry {
    */
   async destroy(): Promise<number> {
     const result = await this.closeAllConnections();
-    this.defaultManager = 'default';
+    this.#defaultManager = undefined;
     this.#managers.clear();
     Log.info(`Removed ${result} manager(s)`);
     return result;
