@@ -4,6 +4,7 @@
   ],
   "out": "docs",
 
+  "entryPointStrategy": "expand",
   "excludeInternal": true,
   "excludePrivate": true,
   "includeVersion": true,

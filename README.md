@@ -1,6 +1,6 @@
 # @storehouse/core
 
-See the [Documentation](https://novice1.000webhostapp.com/storehouse/core/) for more information.
+See the [Documentation](https://kisiwu.github.io/storehouse/core/latest/) for more information.
 
 ## Installation
 
@@ -255,4 +255,4 @@ const numberOfManagersClosed = await Storehouse.destroy();
 
 ## References
 
-- [Documentation](https://novice1.000webhostapp.com/storehouse/core/)
+- [Documentation](https://kisiwu.github.io/storehouse/core/latest/)
