@@ -7,8 +7,8 @@ interface User {
   address?: string;
 }
 
-describe('Storehouse', () => {
-  it('should be aiight', async () => {
+describe('Storehouse', function() {
+  it('should be aiight', async function()  {
     // settings
     Storehouse.setManagerType(MapManager);
     Storehouse.add({
@@ -29,6 +29,7 @@ describe('Storehouse', () => {
     // get user
     let userName = '';
     const mapping = Storehouse.getManager<MapManager>(/* 'mapping' */);
+    expect(mapping).to.not.be.undefined;
     if (mapping) {
       expect(mapping.name).to.equal('novice_mapping');
       const user = mapping.getModel<User>('users').get('id1234');  

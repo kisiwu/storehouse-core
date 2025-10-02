@@ -1,5 +1,5 @@
 import { Registry } from './registry';
-import { ManagerFactory, ManagerFactorySettings } from './managerFactory';
+import { ManagerFactory, ManagerFactorySettings } from './manager-factory';
 import {  ManagerConstructor } from './manager';
 
 class Storehouse extends Registry {

@@ -1,13 +1,9 @@
-/*
-import Storehouse from '../../src/index';
-import { MapManager, ModelType } from './mapManager'
+import Storehouse from '../../lib/index.js';
+import { MapManager } from './mapManager.mjs'
 import { expect } from 'chai';
-*/
-const Storehouse = require('../../lib/index');
-const MapManager = require('./mapManager');
 
-describe('Storehouse', () => {
-  it('should be aiight', async () => {
+describe('Storehouse', function() {
+  it('should be aiight', async function() {
     // settings
     Storehouse.setManagerType(MapManager);
     Storehouse.add({
@@ -25,6 +21,7 @@ describe('Storehouse', () => {
     // get user
     let userName = '';
     const mapping = Storehouse.getManager(); // default = 'mapping'
+    expect(mapping).to.not.be.undefined;
     if (mapping) {
       const user = mapping.getModel('users').get('id1234');  
       expect(user).to.be.an('object');
