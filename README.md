@@ -5,7 +5,7 @@ See the [Documentation](https://kisiwu.github.io/storehouse/core/latest/) for mo
 ## Installation
 
 ```bash
-$ npm install @storehouse/core
+npm install @storehouse/core
 ```
 
 ## Usage (Javascript)
