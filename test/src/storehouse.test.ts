@@ -1,5 +1,5 @@
 import { Storehouse } from '../../src/index';
-import { MapManager, ModelType } from './mapManager'
+import { MapManager, ModelType } from './map-manager'
 import { expect } from 'chai';
 
 interface User {

@@ -3,7 +3,7 @@ import { IManager } from '../../src/manager';
 export type ModelType<T = unknown> = Map<string, T>;
 
 export class MapManager implements IManager {
-  static readonly type = 'mapping';
+  static readonly type: string = 'mapping';
 
   #models: Map<string, ModelType>;
   public name: string;
