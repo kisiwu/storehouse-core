@@ -1,10 +1,11 @@
+import { InvalidManagerConfigError, ManagerTypeNotFoundError } from './errors';
 import { IManager, ManagerSettings, ManagerConstructor, ManagerArg } from './manager';
 
 export interface ManagerFactorySettings<TConfig = unknown> extends ManagerSettings<TConfig> {
   type: string | ManagerConstructor<TConfig>;
 }
 
-export interface ManagerFactoryArg<TConfig = unknown> 
+export interface ManagerFactoryArg<TConfig = unknown>
   extends ManagerFactorySettings<TConfig>, ManagerArg<TConfig> {
 }
 
@@ -16,6 +17,13 @@ export class ManagerFactory {
   }
 
   getManager<TConfig = unknown>(arg: ManagerFactoryArg<TConfig>): IManager {
+    if (!arg || typeof arg !== 'object') {
+      throw new InvalidManagerConfigError('Manager factory argument must be a valid object');
+    }
+    if (!arg.type) {
+      throw new InvalidManagerConfigError('Manager type is required');
+    }
+
     let manager;
     const managerArg: ManagerArg<TConfig> = {
       name: arg.name,
@@ -23,15 +31,18 @@ export class ManagerFactory {
     };
     if (typeof arg.type === 'string') {
       const mClass = this.#managerClasses.get(arg.type);
-      if (mClass) {
-        manager = new mClass(managerArg);
-      } else {
-        throw new Error(
-          `Property "type" with value "${arg.type}" is not supported!`
+      if (!mClass) {
+        throw new ManagerTypeNotFoundError(arg.type);
+      }
+      manager = new mClass(managerArg);
+    } else {
+      try {
+        manager = new arg.type(managerArg);
+      } catch (error) {
+        throw new InvalidManagerConfigError(
+          `Failed to instantiate manager: ${error instanceof Error ? error.message : String(error)}`
         );
       }
-    } else {
-      manager = new arg.type(managerArg);
     }
     return manager;
   }

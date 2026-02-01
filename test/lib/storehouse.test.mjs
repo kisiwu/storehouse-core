@@ -1,4 +1,4 @@
-import Storehouse from '../../lib/index.js';
+import { Storehouse } from '../../lib/index.js';
 import { MapManager } from './mapManager.mjs'
 import { expect } from 'chai';
 

@@ -1,16 +1,37 @@
-import {debugger as Debug} from '@novice1/logger';
+import { debugger as Debug } from '@novice1/logger';
+import { EventEmitter } from 'node:events';
 import { IManager } from './manager';
+import { InvalidManagerConfigError, ManagerAlreadyExistsError, ManagerNotFoundError } from './errors';
 
 const Log = Debug('@storehouse/core:registry');
 
-export class Registry {
+export interface RegistryEvents {
+  'manager:before:add': { name: string; manager: IManager };
+  'manager:added': { name: string; manager: IManager };
+  'manager:removed': { name: string; manager: IManager };
+  'manager:default:changed': { previous?: string; current: string };
+  'connection:before:close': { manager: string };
+  'connection:closed': { manager: string };
+  'connection:error:close': { manager: string; error: unknown };
+  'connection:accessed': { manager: string; found: boolean };
+  'connections:before:close:all': void;
+  'connections:closed:all': { count: number };
+  'model:accessed': { manager?: string; model: string; found: boolean };
+  'registry:before:destroy': void;
+  'registry:destroyed': { count: number };
+}
+
+export class Registry extends EventEmitter {
 
   #managers: Map<string, IManager>;
   #defaultManager?: string;
 
   set defaultManager(name: string) {
+    const previous = this.#defaultManager;
     Log.info('Set default manager as "%s"', name);
-    this.#defaultManager = name
+    this.#defaultManager = name;
+
+    this.emit('manager:default:changed', { previous, current: name });
   }
 
   get defaultManager(): string {
@@ -23,21 +44,76 @@ export class Registry {
   }
 
   constructor(managers?: Record<string, IManager>) {
+    super();
     this.#managers = new Map<string, IManager>();
     if (managers) {
       this.addManagers(managers);
     }
   }
 
+  /**
+   * override EventEmitter.emit to support typed events
+   */
+  emit<K extends keyof RegistryEvents>(
+    event: K,
+    ...args: RegistryEvents[K] extends void ? [] : [RegistryEvents[K]]
+  ): boolean {
+    return super.emit(event, ...args);
+  }
+
+  /**
+   * override EventEmitter.on to support typed events
+   */
+  on<K extends keyof RegistryEvents>(
+    event: K,
+    listener: (args: RegistryEvents[K]) => void
+  ): this {
+    return super.on(event, listener);
+  }
+
+  /**
+   * override EventEmitter.once to support typed events
+   */
+  once<K extends keyof RegistryEvents>(
+    event: K,
+    listener: (args: RegistryEvents[K]) => void
+  ): this {
+    return super.once(event, listener);
+  }
+
+  /**
+   * override EventEmitter.off to support typed events
+   */
+  off<K extends keyof RegistryEvents>(
+    event: K,
+    listener: (args: RegistryEvents[K]) => void
+  ): this {
+    return super.off(event, listener);
+  }
+
   addManager(name: string, manager: IManager): void {
-    if (!this.#managers.has(name)) {
-      this.#managers.set(name, manager);
-      if (!this.#defaultManager) {
-        this.defaultManager = name;
-      }
-    } else {
-      throw new Error(`Manager "${name}" already exists!`)
+    // Emit before event
+    this.emit('manager:before:add', { name, manager });
+
+    if (!name || typeof name !== 'string') {
+      throw new InvalidManagerConfigError('Manager name must be a non-empty string');
     }
+    if (!manager || typeof manager !== 'object') {
+      throw new InvalidManagerConfigError('Manager must be a valid object');
+    }
+    if (typeof manager.getConnection !== 'function') {
+      throw new InvalidManagerConfigError('Manager must implement getConnection method');
+    }
+    if (this.#managers.has(name)) {
+      throw new ManagerAlreadyExistsError(name);
+    }
+    this.#managers.set(name, manager);
+    if (!this.#defaultManager) {
+      this.defaultManager = name;
+    }
+
+    // Emit after event
+    this.emit('manager:added', { name, manager });
   }
 
   addManagers(managers: Record<string, IManager>): void {
@@ -54,12 +130,15 @@ export class Registry {
     return this.#managers.has(name);
   }
 
-  getManager<T extends IManager = IManager>(name?: string): T | undefined {
-    if (typeof name === 'undefined') {
-      return this.getDefaultManager<T>();
+  getManager<T extends IManager = IManager>(name?: string, throwOnMissing = false): T | undefined {
+    const managerName = name ?? this.defaultManager;
+    const manager = this.#managers.get(managerName);
+
+    if (!manager && throwOnMissing) {
+      throw new ManagerNotFoundError(managerName);
     }
 
-    return <T>this.#managers.get(name);
+    return <T>manager;
   }
 
   removeManager<T extends IManager = IManager>(name: string): T | undefined {
@@ -67,32 +146,82 @@ export class Registry {
     this.#managers.delete(name);
     if (r) {
       Log.info(`Removed manager "${name}"`);
+      this.emit('manager:removed', { name, manager: r });
     }
     return r;
   }
 
   getDefaultConnection<T = unknown>(): T | undefined {
     const name = this.defaultManager;
-    return <T>this.#managers.get(name)?.getConnection();
+    const connection = <T>this.#managers.get(name)?.getConnection();
+  
+  this.emit('connection:accessed', { manager: name, found: !!connection });
+  
+  return connection;
   }
 
   getConnection<T = unknown>(manager?: string): T | undefined {
     if (typeof manager === 'undefined') {
       return this.getDefaultConnection();
     }
-    return <T>this.#managers.get(manager)?.getConnection();
+
+    const connection = <T>this.#managers.get(manager)?.getConnection();
+  
+  this.emit('connection:accessed', { manager, found: !!connection });
+  
+  return connection;
   }
 
-  closeDefaultConnection<T = unknown>(): Promise<T> | void {
-    const name = this.defaultManager;
-    return <Promise<T> | void>this.#managers.get(name)?.closeConnection();
-  }
+  async closeDefaultConnection<T = unknown>(): Promise<T | void> {
+    const managerName = this.defaultManager;
+    const managerInstance = this.#managers.get(managerName);
 
-  closeConnection<T = unknown>(manager?: string): Promise<T> | void {
-    if (typeof manager === 'undefined') {
-      return this.closeDefaultConnection();
+    if (!managerInstance) {
+      return;
     }
-    return <Promise<T> | void>this.#managers.get(manager)?.closeConnection();
+
+    // Emit before event
+    this.emit('connection:before:close', { manager: managerName });
+
+    try {
+      const result = await managerInstance.closeConnection();
+
+      // Emit success event
+      this.emit('connection:closed', { manager: managerName });
+
+      return <T>result;
+    } catch (error) {
+      // Emit error event
+      this.emit('connection:error:close', { manager: managerName, error });
+      throw error;
+    }
+  }
+
+  async closeConnection<T = unknown>(manager?: string): Promise<T | void> {
+    if (typeof manager === 'undefined') {
+      return await this.closeDefaultConnection();
+    }
+
+    const managerInstance = this.#managers.get(manager);
+    if (!managerInstance) {
+      return;
+    }
+
+    // Emit before event
+    this.emit('connection:before:close', { manager: manager });
+
+    try {
+      const result = await managerInstance.closeConnection();
+
+      // Emit success event
+      this.emit('connection:closed', { manager: manager });
+
+      return <T>result;
+    } catch (error) {
+      // Emit error event
+      this.emit('connection:error:close', { manager: manager, error });
+      throw error;
+    }
   }
 
   /**
@@ -100,12 +229,17 @@ export class Registry {
    * @returns The number of connections closed
    */
   async closeAllConnections(): Promise<number> {
+    this.emit('connections:before:close:all');
+
     let i = 0;
     for (const m of this.#managers.values()) {
       await m.closeConnection();
       i++;
     }
     Log.info(`Closed ${i} manager(s)`);
+
+    this.emit('connections:closed:all', { count: i });
+
     return i;
   }
 
@@ -121,10 +255,15 @@ export class Registry {
    * Closes all connections and removes all managers
    */
   async destroy(): Promise<number> {
+    this.emit('registry:before:destroy');
+
     const result = await this.closeAllConnections();
     this.#defaultManager = undefined;
     this.#managers.clear();
     Log.info(`Removed ${result} manager(s)`);
+
+    this.emit('registry:destroyed', { count: result });
+
     return result;
   }
 
@@ -139,6 +278,14 @@ export class Registry {
       searchModel = model;
     }
 
-    return <ModelType>this.getManager(searchManager)?.getModel?.(searchModel);
+    const modelResult = <ModelType>this.getManager(searchManager)?.getModel?.(searchModel);
+
+    this.emit('model:accessed', {
+      manager: searchManager,
+      model: searchModel,
+      found: !!modelResult
+    });
+
+    return modelResult;
   }
 }

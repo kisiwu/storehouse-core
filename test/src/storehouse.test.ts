@@ -1,4 +1,4 @@
-import Storehouse from '../../src/index';
+import { Storehouse } from '../../src/index';
 import { MapManager, ModelType } from './mapManager'
 import { expect } from 'chai';
 
