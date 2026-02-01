@@ -567,9 +567,9 @@ class MyCustomManager implements IManager {
     } catch (error) {
       return {
         healthy: false,
-        message: `Health check failed: ${error.message}`,
+        message: `Health check failed: ${error instanceof Error ? error.message : String(error)}`,
         details: {
-          error: error.stack
+          error: error instanceof Error ? error.stack : String(error)
         },
         latency: Date.now() - start,
         timestamp
