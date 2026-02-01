@@ -5,6 +5,9 @@ import { InvalidManagerConfigError, ManagerAlreadyExistsError, ManagerNotFoundEr
 
 const Log = Debug('@storehouse/core:registry');
 
+/**
+ * Registry events interface for type-safe event handling
+ */
 export interface RegistryEvents {
   'manager:before:add': { name: string; manager: IManager };
   'manager:added': { name: string; manager: IManager };
@@ -21,6 +24,17 @@ export interface RegistryEvents {
   'registry:destroyed': { count: number };
 }
 
+/**
+ * Registry for managing multiple database/storage managers
+ * Extends EventEmitter to provide lifecycle events
+ * @example
+ * ```ts
+ * const registry = new Registry();
+ * registry.addManager('main', new MongoManager());
+ * const conn = registry.getConnection('main');
+ * await registry.close();
+ * ```
+ */
 export class Registry extends EventEmitter {
 
   #managers: Map<string, IManager>;
@@ -91,6 +105,11 @@ export class Registry extends EventEmitter {
     return super.off(event, listener);
   }
 
+  /**
+   * Add a manager to the registry
+   * @param name - Name of the manager
+   * @param manager - Manager instance
+   */
   addManager(name: string, manager: IManager): void {
     // Emit before event
     this.emit('manager:before:add', { name, manager });
@@ -116,20 +135,42 @@ export class Registry extends EventEmitter {
     this.emit('manager:added', { name, manager });
   }
 
+  /**
+   * Add multiple managers at once
+   * @param managers - Object mapping names to manager instances
+   */
   addManagers(managers: Record<string, IManager>): void {
     Object.keys(managers).forEach(
       n => this.addManager(n, managers[n])
     );
   }
 
+  /**
+   * Get the default manager
+   * @template T - Type of the manager
+   * @returns The default manager instance or undefined
+   */
   getDefaultManager<T extends IManager = IManager>(): T | undefined {
     return <T>this.#managers.get(this.defaultManager);
   }
 
+  /**
+   * Check if a manager exists in the registry
+   * @param name - Name of the manager to check
+   * @returns true if the manager exists
+   */
   hasManager(name: string): boolean {
     return this.#managers.has(name);
   }
 
+  /**
+   * Get a manager by name
+   * @template T - Type of the manager
+   * @param name - Name of the manager, defaults to default manager
+   * @param throwOnMissing - Whether to throw if manager not found
+   * @returns The manager instance or undefined
+   * @throws {ManagerNotFoundError} If throwOnMissing is true and manager not found
+   */
   getManager<T extends IManager = IManager>(name?: string, throwOnMissing = false): T | undefined {
     const managerName = name ?? this.defaultManager;
     const manager = this.#managers.get(managerName);
@@ -141,6 +182,12 @@ export class Registry extends EventEmitter {
     return <T>manager;
   }
 
+  /**
+   * Remove a manager by name
+   * @template T - Type of the manager
+   * @param name - Name of the manager to remove
+   * @returns The removed manager instance or undefined
+   */
   removeManager<T extends IManager = IManager>(name: string): T | undefined {
     const r = <T>this.#managers.get(name);
     this.#managers.delete(name);
@@ -151,6 +198,11 @@ export class Registry extends EventEmitter {
     return r;
   }
 
+  /**
+   * Get the default connection
+   * @template T - Type of the connection
+   * @returns The default connection or undefined
+   */
   getDefaultConnection<T = unknown>(): T | undefined {
     const name = this.defaultManager;
     const connection = <T>this.#managers.get(name)?.getConnection();
@@ -160,6 +212,12 @@ export class Registry extends EventEmitter {
     return connection;
   }
 
+  /**
+   * Get a connection by manager name
+   * @template T - Type of the connection
+   * @param manager - Name of the manager, defaults to default manager
+   * @returns The connection or undefined
+   */
   getConnection<T = unknown>(manager?: string): T | undefined {
     if (typeof manager === 'undefined') {
       return this.getDefaultConnection();
@@ -172,6 +230,11 @@ export class Registry extends EventEmitter {
     return connection;
   }
 
+  /**
+   * Close the default connection
+   * @template T - Type of the connection
+   * @returns The result of the close operation or void
+   */
   async closeDefaultConnection<T = unknown>(): Promise<T | void> {
     const managerName = this.defaultManager;
     const managerInstance = this.#managers.get(managerName);
@@ -197,6 +260,12 @@ export class Registry extends EventEmitter {
     }
   }
 
+  /**
+   * Close a connection by manager name
+   * @template T - Type of the connection
+   * @param manager - Name of the manager, defaults to default manager
+   * @returns The result of the close operation or void
+   */
   async closeConnection<T = unknown>(manager?: string): Promise<T | void> {
     if (typeof manager === 'undefined') {
       return await this.closeDefaultConnection();
@@ -267,8 +336,15 @@ export class Registry extends EventEmitter {
     return result;
   }
 
+  /**
+   * Get a model from a manager
+   * @template ModelType - Type of the model
+   * @param manager - Manager name or model name if second param is undefined
+   * @param model - Model name (optional)
+   * @returns The model instance or undefined
+   */
   getModel<ModelType = unknown>(manager: string, model?: string): ModelType | undefined {
-    let searchManager;
+    let searchManager: string | undefined;
     let searchModel: string;
 
     if (typeof model === 'undefined') {
@@ -291,6 +367,8 @@ export class Registry extends EventEmitter {
 
   /**
    * Check if a manager's connection is active
+   * @param manager - Name of the manager, defaults to default manager
+   * @returns true if connected, false otherwise
    */
   isConnected(manager?: string): boolean {
     const managerInstance = this.getManager(manager);
@@ -299,6 +377,8 @@ export class Registry extends EventEmitter {
 
   /**
    * Perform health check on a manager
+   * @param manager - Name of the manager, defaults to default manager
+   * @returns Health check result or undefined if not supported
    */
   async healthCheck(manager?: string): Promise<HealthCheckResult | undefined> {
     const managerInstance = this.getManager(manager);
@@ -310,6 +390,7 @@ export class Registry extends EventEmitter {
 
   /**
    * Perform health checks on all managers
+   * @returns Record of health check results keyed by manager name
    */
   async healthCheckAll(): Promise<Record<string, HealthCheckResult>> {
     const results: Record<string, HealthCheckResult> = {};
