@@ -206,5 +206,5 @@ app.get('/health', async (req, res) => {
 });
 ```
 
-[Unreleased]: https://github.com/demingongo/kaapi/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/demingongo/kaapi/commits/v2.0.0
+[Unreleased]: https://github.com/kisiwu/storehouse-core/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/kisiwu/storehouse-core/commits/v2.0.0
