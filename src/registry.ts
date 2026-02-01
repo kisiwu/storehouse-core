@@ -1,6 +1,6 @@
 import { debugger as Debug } from '@novice1/logger';
 import { EventEmitter } from 'node:events';
-import { IManager } from './manager';
+import { HealthCheckResult, IManager } from './manager';
 import { InvalidManagerConfigError, ManagerAlreadyExistsError, ManagerNotFoundError } from './errors';
 
 const Log = Debug('@storehouse/core:registry');
@@ -154,10 +154,10 @@ export class Registry extends EventEmitter {
   getDefaultConnection<T = unknown>(): T | undefined {
     const name = this.defaultManager;
     const connection = <T>this.#managers.get(name)?.getConnection();
-  
-  this.emit('connection:accessed', { manager: name, found: !!connection });
-  
-  return connection;
+
+    this.emit('connection:accessed', { manager: name, found: !!connection });
+
+    return connection;
   }
 
   getConnection<T = unknown>(manager?: string): T | undefined {
@@ -166,10 +166,10 @@ export class Registry extends EventEmitter {
     }
 
     const connection = <T>this.#managers.get(manager)?.getConnection();
-  
-  this.emit('connection:accessed', { manager, found: !!connection });
-  
-  return connection;
+
+    this.emit('connection:accessed', { manager, found: !!connection });
+
+    return connection;
   }
 
   async closeDefaultConnection<T = unknown>(): Promise<T | void> {
@@ -287,5 +287,47 @@ export class Registry extends EventEmitter {
     });
 
     return modelResult;
+  }
+
+  /**
+   * Check if a manager's connection is active
+   */
+  isConnected(manager?: string): boolean {
+    const managerInstance = this.getManager(manager);
+    return managerInstance?.isConnected?.() ?? false;
+  }
+
+  /**
+   * Perform health check on a manager
+   */
+  async healthCheck(manager?: string): Promise<HealthCheckResult | undefined> {
+    const managerInstance = this.getManager(manager);
+    if (!managerInstance?.healthCheck) {
+      return undefined;
+    }
+    return await managerInstance.healthCheck();
+  }
+
+  /**
+   * Perform health checks on all managers
+   */
+  async healthCheckAll(): Promise<Record<string, HealthCheckResult>> {
+    const results: Record<string, HealthCheckResult> = {};
+
+    for (const [name, manager] of this.#managers.entries()) {
+      if (manager.healthCheck) {
+        try {
+          results[name] = await manager.healthCheck();
+        } catch (error) {
+          results[name] = {
+            healthy: false,
+            message: `Health check threw error: ${error instanceof Error ? error.message : String(error)}`,
+            timestamp: Date.now()
+          };
+        }
+      }
+    }
+
+    return results;
   }
 }
