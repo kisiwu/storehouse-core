@@ -9,18 +9,57 @@ const Log = Debug('@storehouse/core:registry');
  * Registry events interface for type-safe event handling
  */
 export interface RegistryEvents {
+  /**
+   * Emitted before a manager is added
+   */
   'manager:before:add': { name: string; manager: IManager };
+  /**
+   * Emitted after a manager is added
+   */
   'manager:added': { name: string; manager: IManager };
+  /**
+   * Emitted after a manager is removed
+   */
   'manager:removed': { name: string; manager: IManager };
+  /**
+   * Emitted when the default manager is changed
+   */
   'manager:default:changed': { previous?: string; current: string };
+  /**
+   * Emitted before a connection is closed
+   */
   'connection:before:close': { manager: string };
+  /**
+   * Emitted after a connection is closed
+   */
   'connection:closed': { manager: string };
+  /**
+   * Emitted when there is an error closing a connection
+   */
   'connection:error:close': { manager: string; error: unknown };
+  /**
+   * Emitted when a connection is accessed
+   */
   'connection:accessed': { manager: string; found: boolean };
+  /**
+   * Emitted before all connections are closed
+   */
   'connections:before:close:all': void;
+  /**
+   * Emitted after all connections are closed
+   */
   'connections:closed:all': { count: number };
+  /**
+   * Emitted when a model is accessed
+   */
   'model:accessed': { manager?: string; model: string; found: boolean };
+  /**
+   * Emitted before the registry is destroyed
+   */
   'registry:before:destroy': void;
+  /**
+   * Emitted after the registry is destroyed
+   */
   'registry:destroyed': { count: number };
 }
 
