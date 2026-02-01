@@ -423,6 +423,164 @@ myRegistry.on('manager:added', ({ name }) => {
 myRegistry.addManager('custom', new MapManager());
 ```
 
+## Health Checks
+
+Managers can optionally implement health check methods to verify connection status and responsiveness. This is useful for monitoring, load balancers, and debugging.
+
+### Health Check Methods
+
+#### isConnected()
+
+Check if a manager's connection is currently active:
+
+```ts
+const connected = Storehouse.isConnected('myManager');
+if (connected) {
+  console.log('Connection is active');
+}
+```
+
+#### healthCheck()
+
+Perform a comprehensive health check on a manager's connection:
+
+```ts
+const health = await Storehouse.healthCheck('myManager');
+
+if (health?.healthy) {
+  console.log(`✓ Healthy - ${health.message}`);
+  console.log(`Latency: ${health.latency}ms`);
+  console.log('Details:', health.details);
+} else {
+  console.error(`✗ Unhealthy - ${health?.message}`);
+}
+```
+
+#### healthCheckAll()
+
+Check the health of all managers at once:
+
+```ts
+const results = await Storehouse.healthCheckAll();
+
+for (const [name, result] of Object.entries(results)) {
+  console.log(`${name}: ${result.healthy ? '✓' : '✗'} ${result.message}`);
+}
+```
+
+### Health Check Result Structure
+
+```ts
+interface HealthCheckResult {
+  healthy: boolean;           // Overall health status
+  message?: string;           // Human-readable message
+  details?: Record<string, unknown>; // Additional info (versions, pool stats, etc.)
+  latency?: number;           // Response time in milliseconds
+  timestamp: number;          // When the check was performed
+}
+```
+
+### Example: API Health Endpoint
+
+```ts
+import express from 'express';
+import { Storehouse } from '@storehouse/core';
+
+const app = express();
+
+app.get('/health', async (req, res) => {
+  const results = await Storehouse.healthCheckAll();
+  const allHealthy = Object.values(results).every(r => r.healthy);
+  
+  res.status(allHealthy ? 200 : 503).json({
+    status: allHealthy ? 'healthy' : 'degraded',
+    timestamp: Date.now(),
+    checks: results
+  });
+});
+```
+
+### Example: Periodic Health Monitoring
+
+```ts
+// Check health every 30 seconds
+setInterval(async () => {
+  const health = await Storehouse.healthCheck();
+  
+  if (!health?.healthy) {
+    console.warn('Connection unhealthy:', health?.message);
+    // Send alert or trigger reconnection logic
+  }
+}, 30000);
+```
+
+### Example: Graceful Degradation
+
+```ts
+async function getData(preferredManager: string, fallbackManager: string) {
+  // Try preferred manager first
+  if (Storehouse.isConnected(preferredManager)) {
+    const health = await Storehouse.healthCheck(preferredManager);
+    if (health?.healthy) {
+      return Storehouse.getManager(preferredManager);
+    }
+  }
+  
+  // Fall back to secondary manager
+  console.warn(`Falling back to ${fallbackManager}`);
+  return Storehouse.getManager(fallbackManager);
+}
+```
+
+### Implementing Health Checks in Custom Managers
+
+To add health check support to your custom manager, implement the optional methods:
+
+```ts
+import { IManager, HealthCheckResult } from '@storehouse/core';
+
+class MyCustomManager implements IManager {
+  isConnected(): boolean {
+    // Return true if connection is active
+    return this.connection?.isOpen ?? false;
+  }
+
+  async healthCheck(): Promise<HealthCheckResult> {
+    const start = Date.now();
+    const timestamp = start;
+
+    try {
+      // Perform a lightweight test operation
+      await this.connection.ping();
+      
+      return {
+        healthy: true,
+        message: 'Connection is healthy',
+        details: {
+          // Add any useful diagnostic info
+          version: await this.connection.getVersion(),
+          uptime: this.connection.uptime
+        },
+        latency: Date.now() - start,
+        timestamp
+      };
+    } catch (error) {
+      return {
+        healthy: false,
+        message: `Health check failed: ${error.message}`,
+        details: {
+          error: error.stack
+        },
+        latency: Date.now() - start,
+        timestamp
+      };
+    }
+  }
+
+  // ... other required methods ...
+}
+```
+
 ## References
 
 - [Documentation](https://kisiwu.github.io/storehouse/core/latest/)
