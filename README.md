@@ -358,7 +358,8 @@ Storehouse.on('registry:destroyed', ({ count }) => {
 });
 ```
 
-Example: Monitoring and Logging
+### Example: Monitoring and Logging
+
 ```ts
 import { Storehouse } from '@storehouse/core';
 
@@ -391,7 +392,8 @@ process.on('SIGTERM', async () => {
 });
 ```
 
-Example: Custom Reconnection Logic
+### Example: Custom Reconnection Logic
+
 ```ts
 Storehouse.on('connection:error:close', async ({ manager, error }) => {
   console.warn(`Connection error for ${manager}, attempting reconnect...`);
@@ -406,7 +408,7 @@ Storehouse.on('connection:error:close', async ({ manager, error }) => {
 });
 ```
 
-#### Using Events with Custom Registry
+### Using Events with Custom Registry
 
 If you create your own registry instance, events work the same way:
 ```ts
