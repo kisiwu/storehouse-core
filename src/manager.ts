@@ -56,7 +56,7 @@ export interface IManager {
    * Check if the connection is currently connected/active (optional)
    * @returns true if connected, false otherwise
    */
-  isConnected?(): boolean;
+  isConnected?(): Promise<boolean>;
 }
 
 /**

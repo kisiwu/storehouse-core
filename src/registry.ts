@@ -409,9 +409,9 @@ export class Registry extends EventEmitter {
    * @param manager - Name of the manager, defaults to default manager
    * @returns true if connected, false otherwise
    */
-  isConnected(manager?: string): boolean {
+  async isConnected(manager?: string): Promise<boolean> {
     const managerInstance = this.getManager(manager);
-    return managerInstance?.isConnected?.() ?? false;
+    return await managerInstance?.isConnected?.() ?? false;
   }
 
   /**

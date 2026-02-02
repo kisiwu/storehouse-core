@@ -1,5 +1,50 @@
 # Changelog
 
+## [2.1.0] - 2026-02-02
+
+### Changed
+
+#### Breaking Changes
+- `IManager.isConnected()` method now returns `Promise<boolean>` instead of `boolean` (async instead of sync)
+- `Registry.isConnected(manager?: string)` method now returns `Promise<boolean>` instead of `boolean` (async instead of sync)
+
+---
+
+## Migration Guide (2.0.x → 2.1.0)
+
+### Breaking Changes
+
+#### isConnected() is now async
+
+```typescript
+// Before (2.0.x)
+if (manager.isConnected()) {
+  // do something
+}
+
+// After (2.1.0)
+if (await manager.isConnected()) {
+  // do something
+}
+
+// Or at registry level
+// Before
+if (Storehouse.isConnected('myManager')) {
+  // do something
+}
+
+// After
+if (await Storehouse.isConnected('myManager')) {
+  // do something  
+}
+```
+
+- Some database drivers need async operations to accurately determine connection status
+- Provides more accurate health checks across different database types
+- Aligns with the async nature of connection management
+
+---
+
 ## [2.0.0] - 2026-02-01
 
 ### Added
@@ -206,5 +251,6 @@ app.get('/health', async (req, res) => {
 });
 ```
 
-[Unreleased]: https://github.com/kisiwu/storehouse-core/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/kisiwu/storehouse-core/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/kisiwu/storehouse-core/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/kisiwu/storehouse-core/commits/v2.0.0

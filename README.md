@@ -434,7 +434,7 @@ Managers can optionally implement health check methods to verify connection stat
 Check if a manager's connection is currently active:
 
 ```ts
-const connected = Storehouse.isConnected('myManager');
+const connected = await Storehouse.isConnected('myManager');
 if (connected) {
   console.log('Connection is active');
 }
@@ -519,7 +519,7 @@ setInterval(async () => {
 ```ts
 async function getData(preferredManager: string, fallbackManager: string) {
   // Try preferred manager first
-  if (Storehouse.isConnected(preferredManager)) {
+  if (await Storehouse.isConnected(preferredManager)) {
     const health = await Storehouse.healthCheck(preferredManager);
     if (health?.healthy) {
       return Storehouse.getManager(preferredManager);
@@ -540,7 +540,7 @@ To add health check support to your custom manager, implement the optional metho
 import { IManager, HealthCheckResult } from '@storehouse/core';
 
 class MyCustomManager implements IManager {
-  isConnected(): boolean {
+  async isConnected(): Promise<boolean> {
     // Return true if connection is active
     return this.connection?.isOpen ?? false;
   }

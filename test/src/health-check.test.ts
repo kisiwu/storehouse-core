@@ -11,7 +11,7 @@ class HealthyManager implements IManager {
     // noop
   }
 
-  isConnected(): boolean {
+  async isConnected(): Promise<boolean> {
     return true;
   }
 
@@ -34,7 +34,7 @@ class UnhealthyManager implements IManager {
     // noop
   }
 
-  isConnected(): boolean {
+  async isConnected(): Promise<boolean> {
     return false;
   }
 
@@ -69,28 +69,28 @@ describe('Health Checks', function() {
   });
 
   describe('isConnected', function() {
-    it('should return true for connected manager', function() {
+    it('should return true for connected manager', async function() {
       registry.addManager('healthy', new HealthyManager());
-      expect(registry.isConnected('healthy')).to.be.true;
+      expect(await registry.isConnected('healthy')).to.be.true;
     });
 
-    it('should return false for disconnected manager', function() {
+    it('should return false for disconnected manager', async function() {
       registry.addManager('unhealthy', new UnhealthyManager());
-      expect(registry.isConnected('unhealthy')).to.be.false;
+      expect(await registry.isConnected('unhealthy')).to.be.false;
     });
 
-    it('should return false for manager without isConnected method', function() {
+    it('should return false for manager without isConnected method', async function() {
       registry.addManager('nocheck', new NoHealthCheckManager());
-      expect(registry.isConnected('nocheck')).to.be.false;
+      expect(await registry.isConnected('nocheck')).to.be.false;
     });
 
-    it('should return false for non-existent manager', function() {
-      expect(registry.isConnected('missing')).to.be.false;
+    it('should return false for non-existent manager', async function() {
+      expect(await registry.isConnected('missing')).to.be.false;
     });
 
-    it('should use default manager when no name provided', function() {
+    it('should use default manager when no name provided', async function() {
       registry.addManager('default', new HealthyManager());
-      expect(registry.isConnected()).to.be.true;
+      expect(await registry.isConnected()).to.be.true;
     });
   });
 
